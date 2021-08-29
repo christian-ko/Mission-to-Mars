@@ -14,6 +14,7 @@ def scrape_all():
 
     # Run all scraping functions and store results in a dictionary
     data = {
+        "hemispheres": hemisphere_data(browser),
         "news_title": news_title,
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
@@ -96,6 +97,39 @@ def mars_facts():
 
     # convert dataframe into HTML, add bootstrap
     return df.to_html()
+
+def hemisphere_data(browser):
+    hemisphere_image_urls = []
+    image_counter = 3
+    try:
+
+        for x in range(1,5):
+        
+            url = 'https://data-class-mars-hemispheres.s3.amazonaws.com/Mars_Hemispheres/index.html'
+            browser.visit(url)
+            
+            img_title = ''
+            img_url = ''
+
+            full_image_elem = browser.find_by_tag('img')[image_counter] 
+            full_image_elem.click()
+            
+            html = browser.html
+            img_soup = soup(html, 'html.parser')
+            
+            img_url = [i['href'] for i in img_soup.find_all('a', href=True) if i['href'] != '#'][1]
+
+            img_title = img_soup.find('h2', class_='title').get_text()
+
+            full_url = f'https://data-class-mars-hemispheres.s3.amazonaws.com/Mars_Hemispheres/{img_url}'
+
+            hemisphere_image_urls.append({'img_url': full_url, 'title': img_title})
+
+            image_counter += 1
+        return hemisphere_image_urls
+    
+    except BaseException:
+        return None
 
 if __name__ == "__main__":
 
